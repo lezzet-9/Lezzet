@@ -90,6 +90,27 @@ main{padding:16px;max-width:640px;margin:0 auto}
 .btn #tot{color:var(--gold)}
 .btn[aria-disabled="true"]{background:var(--line);color:var(--muted);cursor:default;pointer-events:none}
 .btn[aria-disabled="true"] #tot{color:var(--muted)}
+.sheet{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet[hidden]{display:none}
+.back{position:absolute;inset:0;background:rgba(14,30,23,.5)}
+.box{position:relative;background:#fff;width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:24px 24px 0 0;padding:16px 18px calc(16px + env(safe-area-inset-bottom,0px));animation:up .3s ease}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.box{animation:none}}
+.sh2{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sh2 h2{margin:0;font-size:24px;color:var(--leaf)}
+.x{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:16px;cursor:pointer}
+.cl{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.cl .nm{flex:1;min-width:0}
+.cl .nm b{display:block;font-size:16px}
+.cl .nm small{display:block;color:var(--muted);font-size:13px}
+.cl .lt{font-weight:700;color:var(--leaf);min-width:70px;text-align:left}
+.del{width:36px;height:36px;border:0;border-radius:50%;background:#fbeceb;color:#b3261e;cursor:pointer;display:grid;place-items:center;flex:none}
+.del svg{width:18px;height:18px;fill:currentColor}
+.sum{display:flex;justify-content:space-between;padding:14px 0;font-size:19px;font-weight:700;border-top:2px solid var(--gold);margin-top:4px}
+.acts{display:grid;gap:10px}
+.acts .btn{justify-content:center}
+.clr{padding:12px;border-radius:14px;border:1px solid var(--line);background:#fff;color:var(--muted);font:inherit;cursor:pointer}
+.box button:focus-visible,#cartbtn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -108,7 +129,16 @@ main{padding:16px;max-width:640px;margin:0 auto}
 <main id="menu"></main>
 <section class="loc"><h2>العنوان</h2><p dir="ltr" id="addr"></p><a class="mapbtn" id="map" href="#" target="_blank" rel="noopener">افتح الموقع في الخريطة</a></section>
 <div class="foot">لذة</div>
-<div class="bar"><a class="btn" id="send" aria-disabled="true"><span>اطلب عبر واتساب</span><span id="tot">السلة فارغة</span></a></div>
+<div class="bar"><button class="btn" id="cartbtn" aria-disabled="true"><span>عرض السلة</span><span id="tot">السلة فارغة</span></button></div>
+<div class="sheet" id="sheet" hidden>
+  <div class="back" data-close></div>
+  <div class="box" role="dialog" aria-modal="true" aria-label="السلة">
+    <div class="sh2"><h2>سلتك</h2><button class="x" data-close aria-label="إغلاق">✕</button></div>
+    <div id="lines"></div>
+    <div class="sum"><span>الإجمالي</span><b id="gt"></b></div>
+    <div class="acts"><a class="btn" id="send" target="_blank" rel="noopener"><span>اطلب عبر واتساب</span></a><button class="clr" id="clr">تفريغ السلة</button></div>
+  </div>
+</div>
 
 <script>
 /* ===== عدّل هنا ===== */
@@ -159,15 +189,21 @@ function render(){
   eachLine(function(c,it,v,q){n+=q;if(v.p!=null)sum+=q*v.p});
   var sb=document.getElementById("send");if(n){sb.href=wa(orderText());sb.target="_blank";sb.rel="noopener";sb.setAttribute("aria-disabled","false")}else{sb.removeAttribute("href");sb.setAttribute("aria-disabled","true")}
   document.getElementById("tot").textContent=n?(n+" طلب"+(sum?" · "+fmt(sum):"")):"السلة فارغة";
+  document.getElementById("cartbtn").setAttribute("aria-disabled",n?"false":"true");
+  if(!n)closeCart();else if(!document.getElementById("sheet").hidden)renderCart(sum);
 }
-function eachLine(f){MENU.forEach(function(c){c.items.forEach(function(it,i){it.v.forEach(function(v,j){var q=cart[c.id+i+"|"+j]||0;if(q)f(c,it,v,q)})})})}
+function eachLine(f){MENU.forEach(function(c){c.items.forEach(function(it,i){it.v.forEach(function(v,j){var q=cart[c.id+i+"|"+j]||0;if(q)f(c,it,v,q,c.id+i+"|"+j)})})})}
 function chips(){
   var h='<button class="chip'+(cat==="all"?" on":"")+'" data-c="all">الكل</button>';
   MENU.forEach(function(c){h+='<button class="chip'+(cat===c.id?" on":"")+'" data-c="'+c.id+'">'+c.title+'</button>'});
   document.getElementById("chips").innerHTML=h;
 }
 document.addEventListener("click",function(e){
+  if(e.target.closest("[data-close]")){closeCart();return}
   var t=e.target.closest("button");if(!t)return;
+  if(t.id==="cartbtn"){if(t.getAttribute("aria-disabled")!=="true")openCart();return}
+  if(t.id==="clr"){cart={};render();return}
+  if(t.dataset.x){cart[t.dataset.x]=0;render();return}
   if(t.dataset.k){cart[t.dataset.k]=Math.max(0,(cart[t.dataset.k]||0)+Number(t.dataset.d));render()}
   if(t.dataset.c){cat=t.dataset.c;if(cat!=="all")opened[cat]=true;chips();render()}
   if(t.dataset.i){var it2=t.closest(".item"),o2=!it2.classList.contains("open");it2.classList.toggle("open",o2);t.setAttribute("aria-expanded",o2);opened["i"+t.dataset.i]=o2}
@@ -181,6 +217,19 @@ var ie=document.getElementById("info");if(inf)ie.innerHTML=inf;else ie.remove();
 document.getElementById("addr").textContent=ADDRESS;
 document.getElementById("map").href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(ADDRESS);
 document.getElementById("tel").href=PHONE?"tel:+"+PHONE:"#";
+function renderCart(sum){
+  var h="";
+  eachLine(function(c,it,v,q,k){
+    h+='<div class="cl"><div class="nm"><b>'+it.n+'</b><small>'+v.l+(v.p!=null?' · '+fmt(v.p):'')+'</small></div>'+
+    '<div class="q"><button aria-label="إنقاص" data-k="'+k+'" data-d="-1">−</button><b>'+q+'</b><button class="add" aria-label="زيادة" data-k="'+k+'" data-d="1">+</button></div>'+
+    '<span class="lt">'+(v.p!=null?fmt(v.p*q):'')+'</span><button class="del" data-x="'+k+'" aria-label="حذف '+it.n+' '+v.l+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-3 6h12l-1 11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 9Zm4 2v8h2v-8h-2Zm4 0v8h2v-8h-2Z"/></svg></button></div>';
+  });
+  document.getElementById("lines").innerHTML=h;
+  document.getElementById("gt").textContent=sum?fmt(sum):"";
+}
+function openCart(){document.getElementById("sheet").hidden=false;document.body.style.overflow="hidden";var t=0;eachLine(function(c,it,v,q){if(v.p!=null)t+=v.p*q});renderCart(t)}
+function closeCart(){document.getElementById("sheet").hidden=true;document.body.style.overflow=""}
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeCart()});
 function orderText(){
   var l=["السلام عليكم، أريد طلب:"],sum=0;
   eachLine(function(c,it,v,q){l.push("• "+it.n+" – "+v.l+" × "+q+(v.p!=null?" = "+fmt(v.p*q):""));if(v.p!=null)sum+=v.p*q});
