@@ -118,12 +118,12 @@ var INSTAGRAM = "";    // اسم الحساب بدون @
 var ADDRESS = "PİRİ REİS MAH. 2268. SK. Bina NO: 5/1. ESENYURT / İSTANBUL";      // العنوان أو المنطقة
 var SIZES=[15,30,40,50,60,75,90];
 var MEAT=[230,500,620,770,1145,1370,1745];
-function vars(off){return SIZES.map(function(n,i){return {l:n+" قطعة",p:MEAT[i]-off}})}
+function vars(rate){return SIZES.map(function(n){return {l:n+" قطعة",p:n*rate}})}
 var MENU = [
  {id:"grape", title:"ورق العنب", desc:"محشي يدويًا ويُطهى طازجًا",
   items:[
-   {n:"ورق عنب بالأرز واللحم", s:"حشوة أرز مع لحم", img:"g1", v:vars(0)},
-   {n:"ورق عنب بالأرز", s:"حشوة أرز فقط", img:"g2", v:vars(50)}
+   {n:"ورق عنب بالأرز واللحم", s:"حشوة أرز مع لحم", img:"g1", v:vars(15)},
+   {n:"ورق عنب بالأرز", s:"حشوة أرز فقط", img:"g2", v:vars(10)}
   ]},
  {id:"pastry", title:"المعجنات", desc:"مخبوزات بيتية",
   items:[
