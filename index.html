@@ -107,6 +107,7 @@ main{padding:16px;max-width:640px;margin:0 auto}
 .del{width:36px;height:36px;border:0;border-radius:50%;background:#fbeceb;color:#b3261e;cursor:pointer;display:grid;place-items:center;flex:none}
 .del svg{width:18px;height:18px;fill:currentColor}
 .sum{display:flex;justify-content:space-between;padding:14px 0;font-size:19px;font-weight:700;border-top:2px solid var(--gold);margin-top:4px}
+.note{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#fbf3df;color:#6b4e0c;font-size:14px;line-height:1.5}
 .acts{display:grid;gap:10px}
 .acts .btn{justify-content:center}
 .clr{padding:12px;border-radius:14px;border:1px solid var(--line);background:#fff;color:var(--muted);font:inherit;cursor:pointer}
@@ -152,6 +153,7 @@ html[lang="tr"] *{font-family:Inter,system-ui,sans-serif !important}
     <div class="sh2"><h2 data-t="cart">سلتك</h2><button class="x" data-close data-al="close" aria-label="إغلاق">✕</button></div>
     <div id="lines"></div>
     <div class="sum"><span data-t="total">الإجمالي</span><b id="gt"></b></div>
+    <p class="note" data-t="note">هذه الأسعار لا تشمل رسوم التوصيل</p>
     <div class="acts"><a class="btn" id="send" target="_blank" rel="noopener"><span data-t="order">اطلب عبر واتساب</span></a><button class="clr" id="clr" data-t="clear">تفريغ السلة</button></div>
   </div>
 </div>
@@ -172,18 +174,18 @@ var MENU = [
   ]},
  {id:"pastry", t:{ar:"المعجنات",tr:"Hamur İşleri"}, d:{ar:"مخبوزات بيتية",tr:"Ev yapımı hamur işleri"},
   items:[
-   {n:{ar:"تمرية",tr:"Temriye"}, s:{ar:"معجنات بحشوة التمر",tr:"Hurma dolgulu hamur işi"}, img:"p1", v:[5].concat(SIZES).map(function(n){return {q:n,p:n*20}})}
+   {n:{ar:"تمرية",tr:"Temriye"}, s:{ar:"معجنات بحشوة التمر",tr:"Hurma dolgulu hamur işi"}, img:"p1", v:[5].concat(SIZES).map(function(n){return {q:n,p:n*25}})}
   ]}
 ];
 var TX={
  ar:{title:"لذة",foot:"لذة",wa:"واتساب",ig:"انستغرام",tel:"اتصال",other:"Türkçe",search:"ابحث في القائمة...",all:"الكل",
   viewCart:"عرض السلة",empty:"السلة فارغة",items:"طلب",cart:"سلتك",total:"الإجمالي",order:"اطلب عبر واتساب",clear:"تفريغ السلة",
   close:"إغلاق",dec:"إنقاص",inc:"زيادة",del:"حذف",add:"إضافة",none:"لا توجد نتائج مطابقة",ask:"اسأل عن السعر",addr:"العنوان",
-  map:"افتح الموقع في الخريطة",pc:"قطعة",ask1:"السلام عليكم، أريد الاستفسار عن لذة",oh:"السلام عليكم، أريد طلب:",ot:"الإجمالي"},
+  map:"افتح الموقع في الخريطة",pc:"قطعة",ask1:"السلام عليكم، أريد الاستفسار عن لذة",note:"هذه الأسعار لا تشمل رسوم التوصيل",oh:"السلام عليكم، أريد طلب:",ot:"الإجمالي"},
  tr:{title:"Lezzet",foot:"Lezzet",wa:"WhatsApp",ig:"Instagram",tel:"Ara",other:"العربية",search:"Menüde ara...",all:"Tümü",
   viewCart:"Sepeti Gör",empty:"Sepet boş",items:"ürün",cart:"Sepetiniz",total:"Toplam",order:"WhatsApp ile sipariş ver",clear:"Sepeti boşalt",
   close:"Kapat",dec:"Azalt",inc:"Artır",del:"Sil",add:"Ekle",none:"Eşleşen sonuç yok",ask:"Fiyat için sorun",addr:"Adres",
-  map:"Haritada aç",pc:"adet",ask1:"Merhaba, Lezzet hakkında bilgi almak istiyorum / السلام عليكم، أريد الاستفسار عن لذة",
+  map:"Haritada aç",pc:"adet",note:"Bu fiyatlara teslimat ücreti dahil değildir",ask1:"Merhaba, Lezzet hakkında bilgi almak istiyorum / السلام عليكم، أريد الاستفسار عن لذة",
   oh:"Merhaba, sipariş vermek istiyorum / السلام عليكم، أريد طلب:",ot:"Toplam / الإجمالي"}
 };
 /* ==================== */
