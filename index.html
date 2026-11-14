@@ -163,6 +163,17 @@ body.pick .langpick{animation-delay:2.75s}
 }
 @keyframes logoin{from{opacity:0;transform:translateY(12px)}}
 @media (prefers-reduced-motion:reduce){body.pick .lg-leaf,body.pick .lg-word,body.pick .lg-tag,body.pick .lg-lz{animation:none}}
+#paysheet{z-index:25}
+.paylink{display:flex;align-items:center;justify-content:center;gap:7px;margin:12px auto 0;padding:8px 14px;border:0;background:none;color:var(--leaf);font:inherit;font-size:14px;font-weight:500;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.paylink svg{width:17px;height:17px;fill:none;stroke:#c8921f;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.payfoot{text-align:center;padding-bottom:14px}
+.pr{padding:12px 0;border-top:1px solid var(--line);text-align:start}
+.pr small{display:block;color:#6b7a72;font-size:13px;margin-bottom:4px}
+.pr .v{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pr b{direction:ltr;unicode-bidi:plaintext;font-size:16px;word-break:normal;color:var(--ink);text-align:left}
+#pv-iban{white-space:nowrap;font-size:14.5px;letter-spacing:0;word-break:normal}
+.cp{flex:none;padding:7px 14px;border-radius:999px;border:1px solid var(--leaf);background:#fff;color:var(--leaf);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.cp.ok{background:var(--leaf);color:#fff}
 </style>
 </head>
 <body class="pick">
@@ -191,7 +202,17 @@ body.pick .langpick{animation-delay:2.75s}
 <main id="menu"></main>
 <section class="loc"><h2 data-t="addr">العنوان</h2><p dir="ltr" id="addr"></p><a class="mapbtn" id="map" href="#" target="_blank" rel="noopener" data-t="map">افتح الموقع في الخريطة</a></section>
 <div class="foot" data-t="foot">لذة</div>
+<div class="payfoot"><button type="button" class="paylink" data-paylink style="margin-top:0"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6 15h4"/></svg><span data-t="pay">معلومات الدفع</span></button></div>
 <div class="bar"><button class="btn" id="cartbtn" aria-disabled="true"><span data-t="viewCart">عرض السلة</span><span id="tot">السلة فارغة</span></button></div>
+<div class="sheet" id="paysheet" hidden>
+  <div class="back" data-pclose></div>
+  <div class="box" role="dialog" aria-modal="true" aria-label="معلومات الدفع">
+    <div class="sh2"><h2 data-t="pay">معلومات الدفع</h2><button class="x" data-pclose data-al="close" aria-label="إغلاق">✕</button></div>
+    <div class="pr"><small data-t="iban">IBAN</small><div class="v"><b id="pv-iban"></b><button type="button" class="cp" data-copy="iban" data-t="copy">نسخ</button></div></div>
+    <div class="pr"><small data-t="holder">اسم صاحب الحساب</small><div class="v"><b id="pv-holder"></b><button type="button" class="cp" data-copy="holder" data-t="copy">نسخ</button></div></div>
+    <div class="pr"><small data-t="bank">البنك</small><div class="v"><b id="pv-bank"></b><button type="button" class="cp" data-copy="bank" data-t="copy">نسخ</button></div></div>
+  </div>
+</div>
 <div class="sheet" id="sheet" hidden>
   <div class="back" data-close></div>
   <div class="box" role="dialog" aria-modal="true" aria-label="السلة">
@@ -200,6 +221,7 @@ body.pick .langpick{animation-delay:2.75s}
     <div class="sum"><span data-t="total">الإجمالي</span><b id="gt"></b></div>
     <p class="note" data-t="note">هذه الأسعار لا تشمل رسوم التوصيل</p>
     <div class="acts"><a class="btn" id="send" target="_blank" rel="noopener"><span data-t="order">اطلب عبر واتساب</span></a><button class="clr" id="clr" data-t="clear">تفريغ السلة</button></div>
+    <button type="button" class="paylink" data-paylink><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6 15h4"/></svg><span data-t="pay">معلومات الدفع</span></button>
   </div>
 </div>
 
@@ -208,6 +230,7 @@ body.pick .langpick{animation-delay:2.75s}
 var PHONE = "905824043848";        // رقم واتساب بصيغة دولية بدون +
 var CURRENCY = "TL";
 var INSTAGRAM = "";    // اسم الحساب بدون @
+var PAY = {iban:"TR54 0082 9000 0949 1052 4196 92", holder:"Gehan Ali Mohammed Muslem Al-hamdi", bank:"Papara"};
 var ADDRESS = "Piri Reis, 2268. Sk. Esenyurt/İstanbul";
 var SIZES=[15,30,40,50,60,75,90];
 function vars(rate){return SIZES.map(function(n){return {q:n,p:n*rate}})}
@@ -227,11 +250,11 @@ var TX={
  ar:{title:"لذة",foot:"لذة",wa:"واتساب",ig:"انستغرام",tel:"اتصال",other:"Türkçe",search:"ابحث في القائمة...",all:"الكل",
   viewCart:"عرض السلة",empty:"السلة فارغة",items:"طلب",cart:"سلتك",total:"الإجمالي",order:"اطلب عبر واتساب",clear:"تفريغ السلة",
   close:"إغلاق",dec:"إنقاص",inc:"زيادة",del:"حذف",add:"إضافة",none:"لا توجد نتائج مطابقة",ask:"اسأل عن السعر",addr:"العنوان",
-  map:"افتح الموقع في الخريطة",pc:"قطعة",ask1:"السلام عليكم، أريد الاستفسار عن لذة",note:"هذه الأسعار لا تشمل رسوم التوصيل",sauces:"الصوصات",pick:"اختر عدد القطع أولاً لاختيار الصوص",freePick:"اختر صوصك المجاني (صوص واحد لكل طلب)",extra:"صوصات إضافية",free:"مجاني",freeo:"مجاني",freeLbl:"صوص مجاني مع الطلب",oh:"السلام عليكم، أريد طلب:",ot:"الإجمالي"},
+  map:"افتح الموقع في الخريطة",pay:"معلومات الدفع",iban:"IBAN",holder:"اسم صاحب الحساب",bank:"البنك",copy:"نسخ",copied:"تم ✓",pc:"قطعة",ask1:"السلام عليكم، أريد الاستفسار عن لذة",note:"هذه الأسعار لا تشمل رسوم التوصيل",sauces:"الصوصات",pick:"اختر عدد القطع أولاً لاختيار الصوص",freePick:"اختر صوصك المجاني (صوص واحد لكل طلب)",extra:"صوصات إضافية",free:"مجاني",freeo:"مجاني",freeLbl:"صوص مجاني مع الطلب",oh:"السلام عليكم، أريد طلب:",ot:"الإجمالي"},
  tr:{title:"Lezzet",foot:"Lezzet",wa:"WhatsApp",ig:"Instagram",tel:"Ara",other:"العربية",search:"Menüde ara...",all:"Tümü",
   viewCart:"Sepeti Gör",empty:"Sepet boş",items:"ürün",cart:"Sepetiniz",total:"Toplam",order:"WhatsApp ile sipariş ver",clear:"Sepeti boşalt",
   close:"Kapat",dec:"Azalt",inc:"Artır",del:"Sil",add:"Ekle",none:"Eşleşen sonuç yok",ask:"Fiyat için sorun",addr:"Adres",
-  map:"Haritada aç",pc:"adet",note:"Bu fiyatlara teslimat ücreti dahil değildir",sauces:"Soslar",pick:"Sosu seçmek için önce adet seçin",freePick:"Ücretsiz sosunuzu seçin (her siparişte 1 adet)",extra:"Ek soslar",free:"Ücretsiz",freeo:"Ücretsiz / مجاني",freeLbl:"Siparişle ücretsiz sos",ask1:"Merhaba, Lezzet hakkında bilgi almak istiyorum / السلام عليكم، أريد الاستفسار عن لذة",
+  map:"Haritada aç",pay:"Ödeme bilgileri",iban:"IBAN",holder:"Hesap sahibi",bank:"Banka",copy:"Kopyala",copied:"Kopyalandı ✓",pc:"adet",note:"Bu fiyatlara teslimat ücreti dahil değildir",sauces:"Soslar",pick:"Sosu seçmek için önce adet seçin",freePick:"Ücretsiz sosunuzu seçin (her siparişte 1 adet)",extra:"Ek soslar",free:"Ücretsiz",freeo:"Ücretsiz / مجاني",freeLbl:"Siparişle ücretsiz sos",ask1:"Merhaba, Lezzet hakkında bilgi almak istiyorum / السلام عليكم، أريد الاستفسار عن لذة",
   oh:"Merhaba, sipariş vermek istiyorum / السلام عليكم، أريد طلب:",ot:"Toplam / الإجمالي"}
 };
 /* ==================== */
@@ -361,6 +384,27 @@ function renderCart(sum){
   document.getElementById("lines").innerHTML=h;
   document.getElementById("gt").textContent=sum?fmt(sum):"";
 }
+(function(){
+  var ps=document.getElementById("paysheet");
+  ["iban","holder","bank"].forEach(function(k){document.getElementById("pv-"+k).textContent=PAY[k]});
+  function shut(){ps.hidden=true;document.body.style.overflow=document.getElementById("sheet").hidden?"":"hidden"}
+  function open(){ps.hidden=false;document.body.style.overflow="hidden"}
+  document.addEventListener("click",function(e){if(e.target.closest("[data-paylink]"))open()});
+  function fromHash(){
+    var h=location.hash;if(h!=="#pay"&&h!=="#pay-tr")return;
+    L=(h==="#pay-tr")?"tr":"ar";document.body.classList.remove("pick");applyLang();open();
+  }
+  fromHash();window.addEventListener("hashchange",fromHash);
+  ps.addEventListener("click",function(e){
+    if(e.target.closest("[data-pclose]")){shut();return}
+    var b=e.target.closest("[data-copy]");if(!b)return;
+    var txt=PAY[b.dataset.copy];
+    function done(){b.classList.add("ok");b.textContent=TX[L].copied;setTimeout(function(){b.classList.remove("ok");b.textContent=TX[L].copy},1600)}
+    function fb(){var t=document.createElement("textarea");t.value=txt;t.style.cssText="position:fixed;opacity:0";document.body.appendChild(t);t.select();try{document.execCommand("copy")}catch(_){}document.body.removeChild(t);done()}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,fb)}else fb();
+  });
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")shut()});
+})();
 function openCart(){document.getElementById("sheet").hidden=false;document.body.style.overflow="hidden";renderCart(totals().sum)}
 function closeCart(){document.getElementById("sheet").hidden=true;document.body.style.overflow=""}
 document.addEventListener("keydown",function(e){if(e.key==="Escape")closeCart()});
